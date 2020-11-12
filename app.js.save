@@ -1,0 +1,252 @@
+const express = require('express');
+const mysql = require('mysql');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const PORT = process.env.PORT || 3200;
+const app = express();
+app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '100mb' }))
+app.use(bodyParser.urlencoded({ extended: true, limit: '100mb' }));
+app.use(cors());
+
+// MySql
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'martin@M070208',
+    database: 'MORENA'
+});
+
+// Route
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + "/views/index.html");
+});
+
+
+app.post('/baja-california/norte/seccion/all', (req, res) => {
+    const { usuario, password } = req.body;
+    const sql = `SELECT * FROM ADMINISTRADORES WHERE USUARIO = '${usuario}' AND PASSWORD = '${password}'`;
+
+    connection.query(sql, (error, results) => {
+        if (error) throw error;
+        if (results.length > 0) {
+            res.json(results);
+        } else {
+            res.send('Not result');
+        }
+    });
+});
+
+
+/** BUSQUEDA ES[]
+SELECT CIUDAD, DISTRITO, SECCION  
+FROM BAJA_CALIFORNIA_NORTE  
+WHERE (CIUDAD LIKE '%TIJUANA%') AND (DISTRITO LIKE '%%') AND (SECCION LIKE '%06%');
+ */
+//OBTENER UNA SOLA SECCION 
+
+
+const URL_S = '/baja-california/norte/seccion/:seccion';
+
+app.get(URL_S, (req, res) => {
+
+    const { seccion } = req.params;
+    const sql = `SELECT * FROM BAJA_CALIFORNIA_NORTE WHERE (SECCION LIKE '%${seccion}%')`;
+
+    connection.query(sql, (error, result) => {
+        if (error) throw error;
+        if (result.length > 0) {
+            res.json(result);
+        } else {
+            res.json([{ CIUDAD: '', DISTRITO: '', SECCION: '', ID: 0 }]);
+        }
+    });
+});
+
+//OBTENER LOS DATOS SIN LA FOTO DEL ENCUESTADO
+app.get('/datos/encuestado/nombre/:nombre', (req, res) => {
+    const { nombre } = req.params;
+    const sql = `SELECT * FROM DATOS_ENCUESTADO WHERE (NOMBRE LIKE '%${nombre}%')`;
+    connection.query(sql, (error, result) => {
+        if (error) throw error;
+
+        if (result.length > 0) {
+            res.json(result);
+        } else {
+            res.json([{ NOMBRE: '', APELLIDOP: '', APELLIDOM: '', TELEFONO_CASA: '', CELULAR: '', TIPO_CELULAR: '', CORREO: '', CURP: '', DOMICILIO: '', VIGENCIA: '', DISTRITO_ESTATAL: '', DISTRITO_FEDERAL: '', SECCION: '', IMG_FRENTE: '', IMG_REVERSO: '', CLAVE_ELECTORAL: '', YEAR_REGISTRO: '', FECHA_NACIMIENTO: '', ID: 0 }]);
+        }
+    });
+});
+
+
+//INICIO DE SESIOM
+app.post('/administradores', (req, res) => {
+    const { usuario, password } = req.body;
+    const sql = `SELECT * FROM ADMINISTRADORES WHERE USUARIO = '${usuario}' AND PASSWORD = '${password}'`;
+
+    connection.query(sql, (error, results) => {
+        if (error) throw error;
+        if (results.length > 0) {
+            res.json(results);
+        } else {
+            res.send('Not result');
+        }
+    });
+});
+
+//OBTENER LOS DATOS SIN LA FOTO DEL ENCUESTADO
+app.get('/datos/encuestado/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = `SELECT  NOMBRE,APELLIDOP,APELLIDOM,TELEFONO_CASA,CELULAR,TIPO_CELULAR,CORREO,CURP,DOMICILIO,VIGENCIA,DISTRITO_ESTATAL,DISTRITO_FEDERAL,SECCION,CLAVE_ELECTORAL,YEAR_REGISTRO,FECHA_NACIMIENTO,ID FROM DATOS_ENCUESTADO WHERE id = ${id}`;
+    connection.query(sql, (error, result) => {
+        if (error) throw error;
+
+        if (result.length > 0) {
+            res.json(result);
+        } else {
+            res.json([{ NOMBRE: '', APELLIDOP: '', APELLIDOM: '', TELEFONO_CASA: '', CELULAR: '', TIPO_CELULAR: '', CORREO: '', CURP: '', DOMICILIO: '', VIGENCIA: '', DISTRITO_ESTATAL: '', DISTRITO_FEDERAL: '', SECCION: '', IMG_FRENTE: '', IMG_REVERSO: '', CLAVE_ELECTORAL: '', YEAR_REGISTRO: '', FECHA_NACIMIENTO: '', ID: 0 }]);
+        }
+    });
+});
+
+//OBTENER A TODOS LOS ENCUESTADOS
+app.get('/encuestados', (req, res) => {
+    const sql = 'SELECT * FROM DATOS_ENCUESTADO';
+
+    connection.query(sql, (error, results) => {
+        if (error) throw error;
+        if (results.length > 0) {
+            res.json(results);
+        } else {
+            res.json([{ NOMBRE: '', APELLIDOP: '', APELLIDOM: '', TELEFONO_CASA: '', CELULAR: '', TIPO_CELULAR: '', CORREO: '', CURP: '', DOMICILIO: '', VIGENCIA: '', DISTRITO_ESTATAL: '', DISTRITO_FEDERAL: '', SECCION: '', IMG_FRENTE: '', IMG_REVERSO: '', CLAVE_ELECTORAL: '', YEAR_REGISTRO: '', FECHA_NACIMIENTO: '', ID: 0 }]);
+        }
+    });
+});
+
+//OBTENER UN SOLO ENCUESTADO 
+app.get('/encuestado/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = `SELECT * FROM DATOS_ENCUESTADO WHERE id = ${id}`;
+    connection.query(sql, (error, result) => {
+        if (error) throw error;
+        if (result.length > 0) {
+            res.json(result);
+        } else {
+            res.json([{ NOMBRE: '', APELLIDOP: '', APELLIDOM: '', TELEFONO_CASA: '', CELULAR: '', TIPO_CELULAR: '', CORREO: '', CURP: '', DOMICILIO: '', VIGENCIA: '', DISTRITO_ESTATAL: '', DISTRITO_FEDERAL: '', SECCION: '', IMG_FRENTE: '', IMG_REVERSO: '', CLAVE_ELECTORAL: '', YEAR_REGISTRO: '', FECHA_NACIMIENTO: '', ID: 0 }]);
+        }
+    });
+});
+
+//OBTENER LA IMAGEN DEL FRENTE DE UN SOLO ENCUESTADO
+app.get('/encuestado/imagen/frente/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = `SELECT IMG_FRENTE FROM DATOS_ENCUESTADO WHERE id = ${id}`;
+    connection.query(sql, (error, result) => {
+        if (error) throw error;
+
+        if (result.length > 0) {
+            res.json(result);
+        } else {
+            res.send('Not result');
+        }
+    });
+});
+
+//OBTENER LA IMAGEN DEL REVERSO DE UN SOLO ENCUESTADO
+app.get('/encuestado/imagen/reveso/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = `SELECT IMG_REVERSO FROM DATOS_ENCUESTADO WHERE id = ${id}`;
+    connection.query(sql, (error, result) => {
+        if (error) throw error;
+
+        if (result.length > 0) {
+            res.json(result);
+        } else {
+            res.send('Not result');
+        }
+    });
+});
+
+//AGREGAR UN ENCUESTADO
+app.post('/encuestado/add', (req, res) => {
+    const sql = 'INSERT INTO DATOS_ENCUESTADO SET ?';
+
+    const customerObj = {
+        nombre: req.body.nombre,
+        apellidop: req.body.apellidop,
+        apellidom: req.body.apellidom,
+        telefono_casa: req.body.telefono_casa,
+        celular: req.body.celular,
+        tipo_celular: req.body.tipo_celular,
+        correo: req.body.correo,
+        curp: req.body.curp,
+        domicilio: req.body.domicilio,
+        vigencia: req.body.vigencia,
+        distrito_estatal: req.body.distrito_estatal,
+        distrito_federal: req.body.distrito_federal,
+        seccion: req.body.seccion,
+        img_frente: req.body.img_frente,
+        img_reverso: req.body.img_reverso,
+        clave_electoral: req.body.clave_electoral,
+        year_registro: req.body.year_registro,
+        fecha_nacimiento: req.body.fecha_nacimiento,
+        estado: req.body.estado,
+        ciudad: req.body.ciudad
+    
+    };
+
+    connection.query(sql, customerObj, error => {
+        if (error) throw error;
+        res.send('created!');
+    });
+});
+
+//ACTUALIZAR UN SOLO ENCUESTADO
+app.put('/encuestado/update/:id', (req, res) => {
+    const { id } = req.params;
+    const { nombre, apellidop, apellidom, telefono_casa, celular, tipo_celular, correo, curp, domicilio, vigencia, distrito_estatal, distrito_federal, seccion, clave_electoral, year_registro, fecha_nacimiento } = req.body;
+    const sql = `UPDATE DATOS_ENCUESTADO SET NOMBRE = '${nombre}', APELLIDOP = '${apellidop}', APELLIDOM = '${apellidom}', TELEFONO_CASA = '${telefono_casa}', CELULAR = '${celular}',TIPO_CELULAR = '${tipo_celular}',CORREO = '${correo}',CURP = '${curp}',DOMICILIO = '${domicilio}', VIGENCIA = '${vigencia}', DISTRITO_ESTATAL = '${distrito_estatal}',DISTRITO_FEDERAL = '${distrito_federal}',SECCION = '${seccion}',CLAVE_ELECTORAL = '${clave_electoral}',YEAR_REGISTRO = '${year_registro}',FECHA_NACIMIENTO = '${fecha_nacimiento}' WHERE ID=${id}`;
+
+    connection.query(sql, error => {
+        if (error) throw error;
+        res.send('updated!');
+    });
+});
+
+//ELIMINAR UN ENCUESTADO
+app.delete('/encuestado/delete/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = `DELETE FROM DATOS_ENCUESTADO WHERE ID= ${id}`;
+
+    connection.query(sql, error => {
+        if (error) throw error;
+        res.send('Delete');
+    });
+});
+
+//FILTRO DE BUSQUEDA PARA ANDROID
+app.post('/encuestados/select', (req, res) => {
+    const { nombre, distrito_estatal, distrito_federal, seccion } = req.body;
+    const sql = `SELECT  NOMBRE, APELLIDOP, APELLIDOM, TELEFONO_CASA, CELULAR, TIPO_CELULAR, CORREO, CURP, DOMICILIO, VIGENCIA, DISTRITO_ESTATAL, DISTRITO_FEDERAL, SECCION FROM DATOS_ENCUESTADO WHERE (NOMBRE LIKE '%${nombre}%')`;
+
+    connection.query(sql, (error, results) => {
+        if (error) throw error;
+        if (results.length > 0) {
+            res.json(results);
+        } else {
+            res.json([{ NOMBRE: '', APELLIDOP: '', APELLIDOM: '', TELEFONO_CASA: '', CELULAR: '', TIPO_CELULAR: '', CORREO: '', CURP: '', DOMICILIO: '', VIGENCIA: '', DISTRITO_ESTATAL: '', DISTRITO_FEDERAL: '', SECCION: '', IMG_FRENTE: '', IMG_REVERSO: '', CLAVE_ELECTORAL: '', YEAR_REGISTRO: '', FECHA_NACIMIENTO: '', ID: 0 }]);
+        }
+    });
+});
+
+
+
+
+
+// Check connect
+connection.connect(error => {
+    if (error) throw error;
+    console.log('Database server running!');
+});
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
